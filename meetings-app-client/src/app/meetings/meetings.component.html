@@ -1,0 +1,199 @@
+<div class="container mt-4">
+
+    <h2 class="underline mb-0">Meetings</h2>
+    <hr class="mb-3 mt-1">
+    
+    <ul class="nav nav-tabs mb-0">
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [class.active]="activeTab === 'search'"
+          (click)="showTab('search')"
+          [routerLink]="['/meetings']"
+          >Filter / Search Meetings</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [class.active]="activeTab === 'add'"
+          
+          (click)="showTab('add')"
+          [routerLink]="['/meetings/add']"
+        > Add a Meeting </a>
+      </li>
+    </ul>
+  
+
+    <div class="tab-content p-3">
+
+      <div class="tab-pane fade show active" id="search-tab" *ngIf="activeTab === 'search'">
+        <div class="filter-box row mb-4">
+          <h4 style="color:white">Search for meetings</h4>
+          <hr>
+          <div class="col-md-4">
+            <label for="filter" class="form-label">Date:</label>
+            <select id="filter" class="form-select" [(ngModel)]="selectedFilter" (change)="filterMeetings()">
+              <option value="ALL" >ALL</option>
+              <option value="PAST">PAST</option>
+              <option value="TODAY" selected>TODAY</option>
+              <option value="UPCOMING">UPCOMING</option>
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label for="search" class="form-label">Search Terms:</label>
+            <textarea
+              id="search"
+              class="form-control"
+              rows="1"
+              [(ngModel)]="searchTerm"
+              placeholder="Enter search terms"
+            ></textarea>
+          </div>
+        </div>
+        <h4>Meetings matching search criteria</h4>
+        <hr>
+        <div class="list-group container mb-3">
+          <div
+            *ngFor="let meeting of filteredMeetings"
+            class="list-group-item py-3"
+          >
+
+            <p class="mb-1">
+              <strong class="fs-5">{{ meeting.date | date: 'dd MMMM yyyy' }} </strong>
+              <small>
+                {{ meeting.startTime.hours }}:{{ meeting.startTime.minutes | number: '2.0' }} -
+                {{ meeting.endTime.hours }}:{{ meeting.endTime.minutes | number: '2.0' }}
+              </small>
+            </p>
+        
+            <p class="mb-3">{{ meeting.name }}</p>
+        
+            <button
+              class="btn btn-danger btn-sm mb-2"
+              (click)="leaveMeeting(meeting._id)"
+            >
+              Excuse Yourself
+            </button>
+    
+            <hr>
+        
+            <p class="mb-2">
+              <strong>Attendees:</strong>
+              <span *ngIf="meeting.attendees && meeting.attendees.length > 0; else noAttendees">
+                <span *ngFor="let attendee of meeting.attendees; let i = index">
+                  {{ attendee.name || attendee.email }}<span *ngIf="i < meeting.attendees.length - 1">, </span>
+                </span>
+              </span>
+              <ng-template #noAttendees>No attendees yet.</ng-template>
+            </p>
+        
+            <div>
+              <select
+                class="form-select form-select-sm d-inline w-auto"
+                [(ngModel)]="meeting.newAttendee"
+              >
+                <option [value]="" disabled selected>Select member</option>
+                <option *ngFor="let email of availableEmails" [value]="email">
+                  {{ email }}
+                </option>
+              </select>
+              <button
+                class="btn btn-primary btn-sm ms-2"
+                (click)="addAttendee(meeting._id, meeting.newAttendee)"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>        
+      </div>
+    </div>
+    <div class="tab-pane fade show" id="add-tab" *ngIf="activeTab === 'add'">
+      <!-- <app-addmeetings></app-addmeetings> -->
+       <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  
+
+<!-- <div class="container mt-4">
+  <h2 class="underline">Meetings</h2>
+  <hr>
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link active" href="#search-tab" data-bs-toggle="tab" (click)="showTab('search')">
+        Filter / Search Meetings
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#add-tab" data-bs-toggle="tab" (click)="showTab('add')">
+        Add a Meeting
+      </a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade show active " id="search-tab" *ngIf="activeTab === 'search'">
+      <div class="filter-box p-4 rounded shadow-sm mb-4">
+        <div class="row ">
+          <h4 style="color: white;">Search For meetings</h4>
+          <hr>
+          <div class="col-md-4">
+            <label for="filter" class="form-label">Date</label>
+            <select id="filter" name="filter" class="form-select" [(ngModel)]="selectedFilter" (change)="filterMeetings()">
+              <option value="ALL">ALL</option>
+              <option value="PAST">PAST</option>
+              <option value="TODAY" selected>TODAY</option>
+              <option value="UPCOMING">UPCOMING</option>
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label for="search" class="form-label">Search for</label>
+            <textarea id="search" name="search" class="form-control" rows="1" [(ngModel)]="searchTerm" placeholder="Search using words which describe the meeting"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <h4>Meetings matching search criteria</h4>
+      <hr>
+      <div class="list-group">
+        <div *ngFor="let meeting of filteredMeetings" class="list-group-item">
+          <p>
+            <strong>{{ meeting.date | date: 'dd MMMM yyyy' }}</strong>
+            <small>
+              {{ meeting.startTime.hours }}:{{ meeting.startTime.minutes | number: '2.0' }} -
+              {{ meeting.endTime.hours }}:{{ meeting.endTime.minutes | number: '2.0' }}
+            </small>
+          </p>
+          <p>{{ meeting.name }}</p>
+          <button class="btn btn-danger btn-sm">Excuse Yourself</button>
+          <hr>
+          <p>
+            <strong>Attendees:</strong>
+            <span *ngIf="meeting.attendees && meeting.attendees.length > 0; else noAttendees">
+                <span *ngFor="let attendee of meeting.attendees; let i = index">
+                  {{ attendee.name || attendee.email }}<span *ngIf="i < meeting.attendees.length - 1">, </span>
+                </span>
+              </span>
+          </p>
+          <ng-template #noAttendees>No attendees yet.</ng-template>
+          <div>
+            <select class="form-select form-select-sm d-inline w-auto" [(ngModel)]="meeting.newAttendee">
+              <option [value]="" disabled selected>Select member</option>
+              <option *ngFor="let email of availableEmails" [value]="email">{{ email }}</option>
+            </select>
+            <button class="btn btn-primary btn-sm ms-2">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="add-tab" *ngIf="activeTab === 'add'">
+      <app-addmeetings></app-addmeetings>
+    </div>
+  </div>
+</div>
+
+<div class="tab-pane fade p-3" id="add-tab" *ngIf="activeTab === 'add'">
+  <app-addmeetings></app-addmeetings>
+</div> -->

@@ -1,0 +1,54 @@
+<div class="container mt-4">
+    <h2>Teams</h2>
+    <hr>
+    <p>View and edit teams you are part of</p>
+    
+    <div class="d-flex row">
+      <!-- Loop through teams -->
+      <div *ngFor="let team of teams" class="col-md-4 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">{{ team.name }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ team.shortName }}</h6>
+            <p class="card-text">{{ team.description }}</p>
+            
+            <button class="btn btn-danger mb-2" (click)="excuseYourself(team)">
+              Excuse yourself
+            </button>
+
+            <hr>
+
+            <p><strong>Members:</strong> {{ team.members.join(', ') }}</p>
+  
+            <!-- Excuse yourself button -->
+  
+            <!-- Add member dropdown -->
+            <div class="input-group">
+              <select class="form-select" [(ngModel)]="selectedMember">
+                <option *ngFor="let user of users" [value]="user">{{ user }}</option>
+              </select>
+              <button class="btn-add btn btn-primary" (click)="addMember(team)">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Add new team card -->
+      <div class="col-md-4 mb-3">
+        <div class="card text-center" (click)="toggleAddTeamForm()">
+          <div class="card-body">
+            <h1 *ngIf="!showAddTeamForm">+</h1>
+            
+            <!-- New team form -->
+            <div *ngIf="showAddTeamForm">
+              <input type="text" class="form-control mb-2" placeholder="Team Name" [(ngModel)]="newTeam.name">
+              <input type="text" class="form-control mb-2" placeholder="Short Name (@)" [(ngModel)]="newTeam.shortName">
+              <textarea class="form-control mb-2" placeholder="Description" [(ngModel)]="newTeam.description"></textarea>
+              <button class="btn btn-primary" (click)="createTeam()">Create Team</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  

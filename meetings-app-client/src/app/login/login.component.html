@@ -1,0 +1,43 @@
+<div id="login" class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <h1 class="text-center">Login</h1>
+      <form
+          name="form"
+          (ngSubmit)="login()"
+          #f="ngForm"
+          novalidate
+      >
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input 
+              type="text" 
+              placeholder="Enter your email"
+              class="form-control"
+              [(ngModel)]="credentials.email"
+              name="email"
+              #email="ngModel"
+          >
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input 
+              type="password" 
+              class="form-control"
+              name="password"
+              placeholder="Enter password"
+              [(ngModel)]="credentials.password"
+              #password="ngModel"
+          >
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+        <div class="text-center mt-3">
+          <a href="#" class="d-block">Forgot Password?</a>
+          <a routerLink="/register" class="d-block">Don't have an account? Sign up</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+

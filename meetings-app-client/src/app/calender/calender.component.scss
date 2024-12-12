@@ -1,0 +1,121 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .underline {
+    margin-top: 0px;
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap; 
+
+    .selected-date {
+      .date-display {
+        font-size: 1.25rem;
+        font-weight: bold;
+      }
+
+      .day-display {
+        font-size: 0.9rem;
+        color: gray;
+      }
+    }
+
+    .calendar-date-picker {
+      width: 300px;
+
+      .input-group-text {
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      input[type="date"] {
+        width: 100%;
+      }
+    }
+  }
+
+  .calendar-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 8px;
+
+    .hour-slot-wrapper {
+      display: flex;
+      align-items: center;
+
+      .hour-label {
+        display: flex;
+        width: 8px;
+        margin-top: 0px;
+        margin-right: 16px;
+        font-size: 14px;
+        font-weight: bold;
+      }
+
+      .hour-slot {
+        position: relative; 
+        flex-grow: 1;
+        background-color: #73c7d5; 
+        height: 60px;
+        padding-top: 4px;
+
+        .meeting {
+          position: absolute; 
+          z-index: 1;
+          opacity: 85%;
+          margin-left: 4px;
+          background-color: #f0f0f0;
+          border: 1px solid #a9a9a9;
+          font-size: 12px;
+          width: calc(100% - 10px);
+          overflow: hidden;
+
+          .meeting-label {
+            font-size: 13px;  
+            margin-left: 5px;
+          }
+
+          .meeting-attendees {
+            font-size: 10px;
+            margin-left: 5px;
+          }
+
+          .meeting-label,.meeting-attendees{
+            display: inline-block;
+            margin-right: 5px;
+          }
+        }
+      }
+    }
+  }
+
+
+
+  // Media query for mobile view
+  @media (max-width: 768px) {
+    .calendar-header {
+      flex-direction: column; // Stack items vertically
+      align-items: flex-start; // Align items to the left
+
+      .calendar-date-picker {
+        width: 100%; // Full width for smaller screens
+
+        input[type="date"] {
+          appearance: none; // Native styling for calendar view
+          padding: 0; // Remove padding for cleaner display
+          background: none; // Remove default background
+          border: none; // Remove borders
+          cursor: pointer; // Ensure it's clickable
+          font-size: 1rem; // Adjust font size
+        }
+      }
+    }
+  }
+}

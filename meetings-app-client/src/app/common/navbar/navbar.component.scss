@@ -1,0 +1,48 @@
+.navbar {
+  padding-left: 20px;
+
+  .nav-item {
+    transition: background-color 0.3s;
+
+    &.active {
+      background-color: #e9ecef;
+    }
+
+    &:hover {
+      background-color: #dee2e6;
+    }
+  }
+
+  /* Style for email and exclamation mark */
+  .email {
+    color: #73c7d5;  // Turquoise blue for the email
+  }
+
+  .exclamation {
+    color: #73c7d5;  // Same turquoise blue for the exclamation mark
+  }
+
+  .logout{
+    cursor: pointer;
+  }
+
+  /* Custom hello styling without nav-link hover effect */
+  .custom-hello {
+    display: inline-block;
+    padding: 0.5rem 1rem;  // Mimicking nav-link's padding for alignment
+    color: #5c5c5c;           // Default color
+  }
+
+  /* Adjust the alignment of the right section */
+  .custom-navbar-right {
+    margin-right: 150px;    // Moves the right section more to the left
+  }
+
+  /* Fixing the active tab highlighting */
+  .nav-link.active {
+    background-color: #e9ecef !important;  // Ensure the active class highlights the tab
+    color: #000 !important;  // Ensure the text color of active tab
+  }
+}
+
+

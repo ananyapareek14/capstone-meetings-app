@@ -1,0 +1,50 @@
+@if(showNavbar){
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <a class="navbar-brand" routerLink="/calendar">My Meetings</a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            aria-current="page"
+            routerLink="/calendar"
+            routerLinkActive="active"
+            >Calendar</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/meetings" routerLinkActive="active">Meetings</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/teams" routerLinkActive="active">Teams</a>
+        </li>
+      </ul>
+
+      <!-- Adjusted Position for the Hello and Logout -->
+      <ul class="navbar-nav mb-2 mb-lg-0 custom-navbar-right">
+        <li >
+          <!-- Removed .nav-link and added .custom-hello to control hover and alignment -->
+          <span class="custom-hello">
+            Hello <span class="email">{{ userEmail }}</span><span class="exclamation">!</span>
+          </span>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link logout" (click)="logout()">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+}

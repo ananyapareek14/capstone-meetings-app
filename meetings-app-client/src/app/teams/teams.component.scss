@@ -1,0 +1,29 @@
+.container{
+    max-width: 79%;
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.card-body h1 {
+    font-size: 4rem;
+    cursor: pointer;
+}
+
+textarea {
+    resize: none;
+}
+
+.btn-add{
+    background-color: #73c7d5;
+    border:#73c7d5;
+
+    
+}
+
+.btn-add:hover{
+    background-color: #62acb9;
+    border:#62acb9;
+}
