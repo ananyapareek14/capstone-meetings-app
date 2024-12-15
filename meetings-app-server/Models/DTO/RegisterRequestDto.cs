@@ -1,6 +1,7 @@
-﻿namespace meetings_app_server.Models.DTO;
+﻿using System.ComponentModel.DataAnnotations;
+namespace meetings_server.Models.DTO;
 
-public class RegisterUserDto
+public class RegisterRequestDto
 {
     public string Name { get; set; }
     public string Email { get; set; }

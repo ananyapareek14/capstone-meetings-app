@@ -1,30 +1,28 @@
-using meetings_app_server.Repositories;
-using meetings_app_server.Services;
+using meetings_server.Data;
+using meetings_server.Models.Domain;
+using meetings_server.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
-using meetings_app_server.Data;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllers();
-
-// Configure DbContext to use SQLite
+// Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register repositories
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IMeetingRepository, MeetingRepository>();
+// Add Identity
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
-// Register JwtService
-builder.Services.AddSingleton<JwtService>();
+// Register the ITokenRepository service
+builder.Services.AddScoped<ITokenRepository, JwtTokenRepository>();
 
-// Configure authentication with JWT (without hardcoding the key)
+// Configure JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -34,65 +32,65 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "localhost:5000",
-            ValidAudience = "localhost:5000"
-        };
-
-        options.Events = new JwtBearerEvents
-        {
-            OnTokenValidated = async context =>
-            {
-                var userId = context.Principal?.FindFirst("userId")?.Value;
-                if (userId == null)
-                {
-                    context.Fail("Unauthorized");
-                    return;
-                }
-
-                var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
-                var dynamicKey = await userRepository.GetUserSessionKey(Guid.Parse(userId));
-
-                if (dynamicKey == null)
-                {
-                    context.Fail("Unauthorized");
-                    return;
-                }
-
-                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(dynamicKey));
-                context.Options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = securityKey
-                };
-            }
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            //IssuerSigningKey = new SymmetricSecurityKey(
+            //    Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes("b14f042be9fa08a51cfbae0d8f7d6742aa15c4b1a778721c74bd37d8c896ba7d"))
         };
     });
 
-// Enable Swagger
+// Add controllers
+builder.Services.AddControllers();
+
+// Configure Swagger with JWT Authentication support
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Meetings API", Version = "v1" });
+
+    // Add JWT Authentication to Swagger
+    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+        BearerFormat = "JWT",
+        Description = "Enter 'Bearer {token}'"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = JwtBearerDefaults.AuthenticationScheme
+                }
+            },
+            new List<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseAuthentication();
+app.UseAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Meetings API v1");
+    });
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthentication(); // Ensure authentication middleware is added
-app.UseAuthorization();
 
 app.MapControllers();
-
-// Migrate the database on startup
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    dbContext.Database.Migrate();
-}
 
 app.Run();

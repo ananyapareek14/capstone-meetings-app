@@ -1,215 +1,60 @@
-﻿//using Microsoft.AspNetCore.Mvc;
-//using meetings_app_server.Models.DTO;
-//using meetings_app_server.Models.Domain;
-//using meetings_app_server.Repositories;
-//using meetings_app_server.Services;
-
-//namespace meetings_app_server.Controllers;
-
-////[ApiController]
-////[Route("api/auth")]
-////public class AuthController : ControllerBase
-////{
-////    private readonly IUserRepository _userRepository;
-////    private readonly JwtService _jwtService;
-
-////    public AuthController(IUserRepository userRepository, JwtService jwtService)
-////    {
-////        _userRepository = userRepository;
-////        _jwtService = jwtService;
-////    }
-
-////    [HttpPost("register")]
-////    public async Task<IActionResult> Register([FromBody] RegisterUserDto registerDto)
-////    {
-////        var user = new User
-////        {
-////            UserId = Guid.NewGuid(),
-////            Name = registerDto.Name,
-////            Email = registerDto.Email,
-////            PasswordHash = registerDto.PasswordHash,
-////            SessionKey = null
-////        };
-
-////        //var result = await _userRepository.Register(user);
-////        //return Ok(new { message = "User registered successfully" });
-////        var result = await _userRepository.Register(user);
-
-////        if (result)
-////        {
-////            return Ok(new { Message = "User registered successfully." });
-////        }
-
-////        return BadRequest(new { Message = "Error registering user." });
-////    }
-
-////    //[HttpPost("login")]
-////    //public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
-////    //{
-////    //    var user = await _userRepository.Login(loginDto.Email, loginDto.Password);
-////    //    if (user == null)
-////    //    {
-////    //        return Unauthorized(new { message = "Invalid credentials" });
-////    //    }
-
-////    //    var token = _jwtService.GenerateToken(user.Email, user.UserId);
-////    //    return Ok(new { token });
-////    //}
-////    [HttpPost("login")]
-////    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
-////    {
-////        var user = await _userRepository.Login(loginDto.Email, loginDto.Password);
-////        if (user == null)
-////        {
-////            return Unauthorized(new { message = "Invalid credentials" });
-////        }
-
-////        // Generate a unique key for the session
-////        var dynamicKey = Guid.NewGuid().ToString();
-
-////        // Store the dynamic key in a database or cache (e.g., Redis)
-////        await _userRepository.SaveUserSessionKey(user.UserId, dynamicKey);
-
-////        var token = _jwtService.GenerateToken(user.Email, user.UserId, dynamicKey);
-////        return Ok(new { token });
-////    }
-
-////}
-
-//[ApiController]
-//[Route("api/auth")]
-//public class AuthController : ControllerBase
-//{
-//    private readonly IUserRepository _userRepository;
-//    private readonly JwtService _jwtService;
-
-//    public AuthController(IUserRepository userRepository, JwtService jwtService)
-//    {
-//        _userRepository = userRepository;
-//        _jwtService = jwtService;
-//    }
-
-//    [HttpPost("register")]
-//    public async Task<IActionResult> Register([FromBody] RegisterUserDto registerDto)
-//    {
-//        // Hash the password before saving
-//        var hashedPassword = HashPassword(registerDto.Password);
-
-//        var user = new User
-//        {
-//            UserId = Guid.NewGuid(),
-//            Name = registerDto.Name,
-//            Email = registerDto.Email,
-//            PasswordHash = hashedPassword,
-//            SessionKey = null // Ensure SessionKey is null for new users
-//        };
-
-//        await _userRepository.Register(user);
-//        return Ok(new { message = "User registered successfully" });
-//    }
-
-//    [HttpPost("login")]
-//    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
-//    {
-//        var user = await _userRepository.Login(loginDto.Email, loginDto.Password);
-//        if (user == null)
-//        {
-//            return Unauthorized(new { message = "Invalid credentials" });
-//        }
-
-//        // Generate a unique session key
-//        var dynamicKey = Guid.NewGuid().ToString();
-
-//        // Store the session key in the database or cache
-//        await _userRepository.SaveUserSessionKey(user.UserId, dynamicKey);
-
-//        var token = _jwtService.GenerateToken(user.Email, user.UserId, dynamicKey);
-//        return Ok(new { token });
-//    }
-
-//    // Helper method to hash the password
-//    private string HashPassword(string password)
-//    {
-//        using (var sha256 = System.Security.Cryptography.SHA256.Create())
-//        {
-//            var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-//            return Convert.ToBase64String(hashedBytes);
-//        }
-//    }
-//}
-
+﻿using meetings_server.Models.Domain;
+using meetings_server.Models.DTO;
+using meetings_server.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using meetings_app_server.Models.DTO;
-using meetings_app_server.Models.Domain;
-using meetings_app_server.Repositories;
-using meetings_app_server.Services;
-using System.Security.Cryptography;
-using System.Text;
 
-namespace meetings_app_server.Controllers
+
+[Route("api/auth")]
+[ApiController]
+public class AuthController : ControllerBase
 {
-    [ApiController]
-    [Route("api/auth")]
-    public class AuthController : ControllerBase
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ITokenRepository _tokenRepository;
+
+    public AuthController(UserManager<ApplicationUser> userManager, ITokenRepository tokenRepository)
     {
-        private readonly IUserRepository _userRepository;
-        private readonly JwtService _jwtService;
+        _userManager = userManager;
+        _tokenRepository = tokenRepository;
+    }
 
-        public AuthController(IUserRepository userRepository, JwtService jwtService)
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
+    {
+        var user = new ApplicationUser { UserName = request.Email, Email = request.Email, Name = request.Name };
+        var result = await _userManager.CreateAsync(user, request.Password);
+
+        if (result.Succeeded)
+            return Ok(new { Message = "User registered successfully" });
+
+        return BadRequest(result.Errors);
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user != null && await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            _userRepository = userRepository;
-            _jwtService = jwtService;
+            var token = _tokenRepository.CreateJWTToken(user);
+            return Ok(new { token, user.Email, user.Id });
         }
 
-        // Register a new user
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserDto registerDto)
+        return Unauthorized("Invalid credentials");
+    }
+
+    [HttpGet("users")]
+    [Authorize]
+    public async Task<IActionResult> GetUsers()
+    {
+        var users = _userManager.Users.Select(user => new
         {
-            // Hash the password before saving
-            var hashedPassword = HashPassword(registerDto.Password);
+            user.Id,
+            user.Email,
+            user.UserName
+        }).ToList();
 
-            var user = new User
-            {
-                UserId = Guid.NewGuid(),
-                Name = registerDto.Name,
-                Email = registerDto.Email,
-                PasswordHash = hashedPassword,
-                SessionKey = null // Ensure SessionKey is null for new users
-            };
-
-            await _userRepository.Register(user);
-            return Ok(new { message = "User registered successfully" });
-        }
-
-        // Login user and generate token
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
-        {
-            var user = await _userRepository.Login(loginDto.Email, loginDto.Password);
-            if (user == null)
-            {
-                return Unauthorized(new { message = "Invalid credentials" });
-            }
-
-            // Generate a unique session key
-            var dynamicKey = Guid.NewGuid().ToString();
-
-            // Store the session key in the database or cache
-            await _userRepository.SaveUserSessionKey(user.UserId, dynamicKey);
-
-            // Generate JWT token with dynamic session key
-            var token = _jwtService.GenerateToken(user.Email, user.UserId, dynamicKey);
-            return Ok(new { token });
-        }
-
-        // Helper method to hash password
-        private string HashPassword(string password)
-        {
-            using (var sha256 = SHA256.Create())
-            {
-                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return Convert.ToBase64String(hashedBytes);
-            }
-        }
+        return Ok(users);
     }
 }

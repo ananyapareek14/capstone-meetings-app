@@ -1,6 +1,6 @@
-﻿namespace meetings_app_server.Models.DTO;
+﻿namespace meetings_server.Models.DTO;
 
-public class MeetingDto
+public class MeetingRequestDto
 {
     public string Name { get; set; }
     public string Description { get; set; }

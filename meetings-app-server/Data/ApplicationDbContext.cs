@@ -1,30 +1,33 @@
-﻿using Microsoft.EntityFrameworkCore;
-using meetings_app_server.Models.Domain;
-using System;
+﻿using meetings_server.Models.Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
-namespace meetings_app_server.Data;
+namespace meetings_server.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public DbSet<User> Users { get; set; }
-    public DbSet<Meeting> Meetings { get; set; }
-    public DbSet<MeetingAttendee> MeetingAttendees { get; set; }
-
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
-        modelBuilder.Entity<MeetingAttendee>()
-            .HasKey(ma => new { ma.MeetingId, ma.UserId });
+    }
 
-        modelBuilder.Entity<MeetingAttendee>()
-            .HasOne(ma => ma.Meeting)
+    public DbSet<Meeting> Meetings { get; set; }
+    public DbSet<Attendee> Attendees { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<Attendee>()
+            .HasKey(a => new { a.MeetingId, a.UserId });
+
+        builder.Entity<Attendee>()
+            .HasOne(a => a.Meeting)
             .WithMany(m => m.Attendees)
-            .HasForeignKey(ma => ma.MeetingId);
+            .HasForeignKey(a => a.MeetingId);
 
-        modelBuilder.Entity<MeetingAttendee>()
-            .HasOne(ma => ma.User)
+        builder.Entity<Attendee>()
+            .HasOne(a => a.User)
             .WithMany()
-            .HasForeignKey(ma => ma.UserId);
+            .HasForeignKey(a => a.UserId);
     }
 }
