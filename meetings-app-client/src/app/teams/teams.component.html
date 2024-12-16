@@ -10,6 +10,7 @@
           <div class="card-body">
             <h5 class="card-title">{{ team.name }}</h5>
             <h6 class="card-subtitle mb-2 text-muted">{{ team.shortName }}</h6>
+            
             <p class="card-text">{{ team.description }}</p>
             
             <button class="btn btn-danger mb-2" (click)="excuseYourself(team)">
@@ -18,7 +19,14 @@
 
             <hr>
 
-            <p><strong>Members:</strong> {{ team.members.join(', ') }}</p>
+            <p>
+  <strong>Members:</strong>
+  <span *ngFor="let member of team.members; let i = index; let last = last">
+    {{ member.email }}
+    <span *ngIf="!last">, </span>
+  </span>
+</p>
+
   
             <!-- Excuse yourself button -->
   
@@ -51,4 +59,3 @@
       </div>
     </div>
   </div>
-  

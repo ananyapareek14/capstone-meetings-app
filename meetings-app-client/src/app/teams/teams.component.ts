@@ -1,72 +1,94 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TeamsService } from '../services/teams/teams.service';
 
 @Component({
   selector: 'app-teams',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './teams.component.html',
-  styleUrl: './teams.component.scss'
+  styleUrl: './teams.component.scss',
 })
-export class TeamsComponent {
-  teams = [
-    {
-      name: 'Customer acquisition campaign',
-      shortName: '@customer-acquisition',
-      description: 'Team to come up with strategies to win over customers by end of FY21',
-      members: ['john@example.com', 'jane@example.com']
-    },
-    {
-      name: 'MERN stack training',
-      shortName: '@mern-stack-training',
-      description: 'Group attending MERN stack training for website revamp project',
-      members: ['jane@example.com', 'mark@example.com']
-    }
-  ];
+export class TeamsComponent implements OnInit {
 
-  // Available users to add
-  users = ['john@example.com', 'jane@example.com', 'mark@example.com', 'anna@example.com'];
-
+  teams: any[] = [];
+  users: string[] = [];
   selectedMember: string = '';
   showAddTeamForm: boolean = false;
+  newTeam = { name: '', shortName: '', description: '' };
 
-  // Data for creating new team
-  newTeam = {
-    name: '',
-    shortName: '',
-    description: ''
-  };
+  constructor(private teamsService: TeamsService) {}
 
-  // Excuse yourself from the team (UI only)
-  excuseYourself(team: any) {
-    console.log(`Excused yourself from team: ${team.name}`);
-    // Implement actual logic later
+  ngOnInit(): void {
+    this.fetchTeams();
+    this.fetchAvailableEmails();
   }
 
-  // Add member to team (UI only)
-  addMember(team: any) {
+  fetchTeams(): void {
+    this.teamsService.getTeams().subscribe({
+      next: (data) => {
+        this.teams = data;
+      },
+      error: (err) => console.error('Failed to fetch teams', err),
+    });
+  }
+
+  fetchAvailableEmails(): void {
+    this.teamsService.getAvailableEmails().subscribe({
+      next: (data) => {
+        this.users = data.map((user: any) => user.email);
+        console.log(data);
+      },
+      error: (err) => console.error('Failed to fetch available emails', err),
+    });
+  }
+
+  addMember(team: any): void {
+    console.log('Team ID:', team._id);
     if (this.selectedMember && !team.members.includes(this.selectedMember)) {
-      team.members.push(this.selectedMember);
+      this.teamsService
+        .addMemberToTeam(team._id, this.selectedMember)
+        .subscribe({
+          next: () => {
+            team.members.push(this.selectedMember);
+            this.selectedMember = ''; // Clear selection
+          },
+          error: (err) => console.error('Failed to add member', err),
+        });
     }
-    this.selectedMember = ''; // Clear selection after adding
   }
 
-  // Toggle new team form
-  toggleAddTeamForm() {
-    this.showAddTeamForm = !this.showAddTeamForm;
+  excuseYourself(team: any): void {
+    this.teamsService.leaveTeam(team._id).subscribe({
+      next: () => {
+        team.members = team.members.filter(
+          (member: string) => member !== this.selectedMember
+        );
+        console.log(`Excused yourself from team: ${team.name}`);
+      },
+      error: (err) => console.error('Failed to leave team', err),
+    });
   }
 
-  // Create new team (UI only)
-  createTeam() {
-    if (this.newTeam.name && this.newTeam.shortName && this.newTeam.description) {
-      this.teams.push({
-        ...this.newTeam,
-        members: [] // Empty members list for new team
+  createTeam(): void {
+    if (
+      this.newTeam.name &&
+      this.newTeam.shortName &&
+      this.newTeam.description
+    ) {
+      this.teamsService.addTeams(this.newTeam).subscribe({
+        next: (createdTeam) => {
+          this.teams.push(createdTeam);
+          this.newTeam = { name: '', shortName: '', description: '' }; // Clear form
+          this.showAddTeamForm = false; // Hide form
+        },
+        error: (err) => console.error('Failed to create team', err),
       });
-      // Clear new team form
-      this.newTeam = { name: '', shortName: '', description: '' };
-      this.showAddTeamForm = false; // Hide form after creation
     }
+  }
+
+  toggleAddTeamForm(): void {
+    this.showAddTeamForm = !this.showAddTeamForm;
   }
 }

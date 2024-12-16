@@ -22,24 +22,15 @@ export class MeetingsService {
     return this.http.get<string[]>(`${this.baseUrl}/users`);
   }
 
-  // addAttendee(meetingId: string, attendeeEmail: string): Observable<any> {
-  //   return this.http.post<any>(`${this.baseUrl}/meetings/${meetingId}?`, {
-  //     email: attendeeEmail,
-  //   });
-  // }
-
   addAttendee(meetingId: string, attendeeEmail: string): Observable<any> {
     const params = new HttpParams()
         .set('action', 'add_attendee')
         .set('email', attendeeEmail);
 
     return this.http.patch<any>(`${this.baseUrl}/meetings/${meetingId}`, {}, { params });
-}
-
+  }
 
   leaveMeeting(_id: string): Observable<any> {
     return this.http.patch<any>(`${this.baseUrl}/meetings/${_id}?action=remove_attendee`,{});
   }
-
-  
 }

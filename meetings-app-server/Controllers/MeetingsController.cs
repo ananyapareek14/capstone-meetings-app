@@ -85,7 +85,7 @@ public class MeetingsController : ControllerBase
 
 
     // POST: api/meetings
-    [HttpPost]
+    [HttpPost("add")]
     public async Task<IActionResult> AddMeeting([FromBody] MeetingRequestDto request)
     {
         //var loggedInUser = await _userManager.GetUserAsync(User);
