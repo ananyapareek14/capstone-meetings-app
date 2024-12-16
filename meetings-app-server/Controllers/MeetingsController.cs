@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using meetings_server.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace meetings_server.Controllers;
 
@@ -23,76 +24,48 @@ public class MeetingsController : ControllerBase
         _userManager = userManager;
     }
 
-    // GET: api/meetings?search=demo&period=past
-    //[HttpGet]
-    //public async Task<IActionResult> GetMeetings([FromQuery] string search, [FromQuery] string period)
-    //{
-    //    //var loggedInUser = await _userManager.GetUserAsync(User);
-    //    //if (loggedInUser == null)
-    //    //{
-    //    //    return Unauthorized("User not logged in");
-    //    //}
 
-    //    var query = _context.Meetings
-    //        .Where(m => m.Attendees.Any(a => a.UserId == loggedInUser.Id));
-
-    //    if (!string.IsNullOrEmpty(search))
-    //    {
-    //        query = query.Where(m => m.Description.Contains(search, StringComparison.OrdinalIgnoreCase));
-    //    }
-
-    //    switch (period.ToLower())
-    //    {
-    //        case "past":
-    //            query = query.Where(m => m.Date < DateTime.Now);
-    //            break;
-    //        case "present":
-    //            query = query.Where(m => m.Date == DateTime.Now.Date && m.StartTime <= DateTime.Now.TimeOfDay && m.EndTime >= DateTime.Now.TimeOfDay);
-    //            break;
-    //        case "future":
-    //            query = query.Where(m => m.Date > DateTime.Now);
-    //            break;
-    //        default:
-    //            break;
-    //    }
-
-    //    var meetings = await query.ToListAsync();
-
-    //    return Ok(meetings);
-    //}
-
-    //[HttpGet]
-    //public async Task<IActionResult> GetMeetings()
-    //{
-    //    // Retrieve all meetings from the database
-    //    var meetings = await _context.Meetings.ToListAsync();
-
-    //    // Return the meetings as a response
-    //    return Ok(meetings);
-    //}
-
-    // GET: api/meetings
-    [HttpGet]
-    public async Task<IActionResult> GetMeetings()
+    [HttpGet("{id}")]
+    [Authorize]
+    public IActionResult GetMeeting(int id)
     {
-        var meetings = await _context.Meetings
-            //.Include(m => m.Attendees)  
-            //.ThenInclude(a => a.User)  
-            .ToListAsync();
+        var meeting = _context.Meetings
+            .Include(m => m.Attendees)
+            .ThenInclude(a => a.User)
+            .FirstOrDefault(m => m.Id == id);
 
-        return Ok(meetings);
+        if (meeting == null) return NotFound();
+
+        // Manual formatting
+        var result = new
+        {
+            id = meeting.Id,
+            name = meeting.Name,
+            description = meeting.Description,
+            date = meeting.Date.ToString("yyyy-MM-dd"),
+            startTime = meeting.StartTime,
+            endTime = meeting.EndTime,
+            attendees = meeting.Attendees.Select(a => new
+            {
+                userId = a.UserId,
+                email = a.User.Email
+            }).ToList()
+        };
+
+        return Ok(result);
     }
 
 
     // POST: api/meetings
     [HttpPost("add")]
+    [Authorize]
     public async Task<IActionResult> AddMeeting([FromBody] MeetingRequestDto request)
     {
-        //var loggedInUser = await _userManager.GetUserAsync(User);
-        //if (loggedInUser == null)
-        //{
-        //    return Unauthorized("User not logged in");
-        //}
+        var loggedInUser = await _userManager.GetUserAsync(User);
+        if (loggedInUser == null)
+        {
+            return Unauthorized("User not logged in");
+        }
 
         // Create the meeting object
         var meeting = new Meeting
@@ -105,13 +78,13 @@ public class MeetingsController : ControllerBase
             Attendees = new List<Attendee>() // Initialize Attendees as a new list
         };
 
-        // Add the logged-in user as an attendee
-        //meeting.Attendees.Add(new Attendee
-        //{
-        //    Meeting = meeting,
-        //    UserId = loggedInUser.Id,
-        //    User = loggedInUser
-        //});
+        //Add the logged -in user as an attendee
+        meeting.Attendees.Add(new Attendee
+        {
+            Meeting = meeting,
+            UserId = loggedInUser.Id,
+            User = loggedInUser
+        });
 
         // Add attendees based on the emails provided in the request
         if (request.Attendees != null && request.Attendees.Any())
@@ -142,87 +115,86 @@ public class MeetingsController : ControllerBase
         return Ok(new { Message = "Meeting created successfully", MeetingId = meeting.Id });
     }
 
+    [HttpPatch("{meetingId}")]
+    [Authorize]
+    public async Task<IActionResult> ManageAttendees(int meetingId, [FromQuery] string action, [FromQuery] string? email = null)
+    {
+        // Validate action parameter
+        if (string.IsNullOrEmpty(action))
+        {
+            return BadRequest("Action parameter is required.");
+        }
 
-    //// PATCH: api/meetings/{meetingId}?action=add_attendee&email=example@example.com
-    //[HttpPatch("{meetingId}")]
-    //public async Task<IActionResult> AddAttendee(int meetingId, [FromQuery] string action, [FromQuery] string email, [FromQuery] string userId)
-    //{
-    //    if (action != "add_attendee")
-    //    {
-    //        return BadRequest("Invalid action");
-    //    }
+        // Fetch the meeting
+        var meeting = await _context.Meetings.Include(m => m.Attendees)
+                                             .FirstOrDefaultAsync(m => m.Id == meetingId);
+        if (meeting == null)
+        {
+            return NotFound("Meeting not found.");
+        }
 
-    //    var meeting = await _context.Meetings.Include(m => m.Attendees).FirstOrDefaultAsync(m => m.Id == meetingId);
-    //    if (meeting == null)
-    //    {
-    //        return NotFound("Meeting not found");
-    //    }
+        // Get the logged-in user
+        var loggedInUser = await _userManager.GetUserAsync(User);
+        if (loggedInUser == null)
+        {
+            return Unauthorized("User not logged in.");
+        }
 
-    //    ApplicationUser attendee;
-    //    if (!string.IsNullOrEmpty(userId))
-    //    {
-    //        attendee = await _userManager.FindByIdAsync(userId);
-    //    }
-    //    else if (!string.IsNullOrEmpty(email))
-    //    {
-    //        attendee = await _userManager.FindByEmailAsync(email);
-    //    }
-    //    else
-    //    {
-    //        return BadRequest("Either userId or email must be provided");
-    //    }
+        // Action: add_attendee
+        if (action == "add_attendee")
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("Email is required to add an attendee.");
+            }
 
-    //    if (attendee == null)
-    //    {
-    //        return NotFound("User not found");
-    //    }
+            var attendeeUser = await _userManager.FindByEmailAsync(email);
+            if (attendeeUser == null)
+            {
+                return NotFound("User with the provided email not found.");
+            }
 
-    //    if (!meeting.Attendees.Any(a => a.UserId == attendee.Id))
-    //    {
-    //        meeting.Attendees.Add(new Attendee
-    //        {
-    //            Meeting = meeting,
-    //            UserId = attendee.Id,
-    //            User = attendee
-    //        });
+            // Check if the user is already an attendee
+            if (meeting.Attendees.Any(a => a.UserId == attendeeUser.Id))
+            {
+                return BadRequest("User is already an attendee of this meeting.");
+            }
 
-    //        await _context.SaveChangesAsync();
-    //    }
+            // Add the attendee
+            meeting.Attendees.Add(new Attendee
+            {
+                Meeting = meeting,
+                UserId = attendeeUser.Id,
+                User = attendeeUser
+            });
 
-    //    return Ok(new { Message = "Attendee added successfully" });
-    //}
+            await _context.SaveChangesAsync();
+            return Ok(new { Message = "Attendee added successfully." });
+        }
 
-    //// PATCH: api/meetings/{meetingId}?action=remove_attendee
-    //[HttpPatch("{meetingId}")]
-    //public async Task<IActionResult> RemoveAttendee(int meetingId, [FromQuery] string action)
-    //{
-    //    if (action != "remove_attendee")
-    //    {
-    //        return BadRequest("Invalid action");
-    //    }
+        // Action: remove_attendee
+        else if (action == "remove_attendee")
+        {
+            // Find the logged-in user's attendee record
+            var attendee = meeting.Attendees.FirstOrDefault(a => a.UserId == loggedInUser.Id);
+            if (attendee == null)
+            {
+                return BadRequest("You are not an attendee of this meeting.");
+            }
 
-    //    var loggedInUser = await _userManager.GetUserAsync(User);
-    //    if (loggedInUser == null)
-    //    {
-    //        return Unauthorized("User not logged in");
-    //    }
+            // Remove the logged-in user from the meeting
+            meeting.Attendees.Remove(attendee);
+            await _context.SaveChangesAsync();
 
-    //    var meeting = await _context.Meetings.Include(m => m.Attendees)
-    //        .FirstOrDefaultAsync(m => m.Id == meetingId);
-    //    if (meeting == null)
-    //    {
-    //        return NotFound("Meeting not found");
-    //    }
+            return Ok(new { Message = "You have been removed from the meeting." });
+        }
 
-    //    var attendee = meeting.Attendees.FirstOrDefault(a => a.UserId == loggedInUser.Id);
-    //    if (attendee == null)
-    //    {
-    //        return BadRequest("User is not an attendee of this meeting");
-    //    }
+        // Invalid action
+        else
+        {
+            return BadRequest("Invalid action. Valid actions are 'add_attendee' or 'remove_attendee'.");
+        }
+    }
 
-    //    meeting.Attendees.Remove(attendee);
-    //    await _context.SaveChangesAsync();
 
-    //    return Ok(new { Message = "You have been removed from the meeting" });
-    //}
 }

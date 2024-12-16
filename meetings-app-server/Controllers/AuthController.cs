@@ -45,7 +45,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("users")]
-    [Authorize(Roles = "Reader,Writer")]
+    [Authorize]
     public async Task<IActionResult> GetUsers()
     {
         var users = _userManager.Users.Select(user => new
