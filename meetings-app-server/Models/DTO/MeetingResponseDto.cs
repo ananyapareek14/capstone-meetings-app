@@ -1,11 +1,5 @@
 ﻿namespace meetings_server.Models.DTO;
 
-//public class TimeDto
-//{
-//    public int Hours { get; set; }
-//    public int Minutes { get; set; }
-//}
-
 public class AttendeeResponseDto
 {
     public string userId { get; set; }
@@ -14,7 +8,7 @@ public class AttendeeResponseDto
 
 public class MeetingsResponseDto
 {
-    public int _id { get; set; }
+    public Guid _id { get; set; }
     public string name { get; set; }
     public string description { get; set; }
     public string date { get; set; }

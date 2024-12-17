@@ -18,6 +18,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(builder);
 
+        builder.Entity<Meeting>()
+                .Property(m => m.Id)
+                .HasDefaultValueSql("newsequentialid()");
+
         builder.Entity<Attendee>()
             .HasKey(a => new { a.MeetingId, a.UserId });
 

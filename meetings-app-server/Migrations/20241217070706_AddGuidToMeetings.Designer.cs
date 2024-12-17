@@ -11,8 +11,8 @@ using meetings_server.Data;
 namespace meetings_server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241215134752_AddMeetings")]
-    partial class AddMeetings
+    [Migration("20241217070706_AddGuidToMeetings")]
+    partial class AddGuidToMeetings
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,6 +44,22 @@ namespace meetings_server.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "a71a55d6-99d7-4123-b4e0-1218ecb90e3e",
+                            ConcurrencyStamp = "a71a55d6-99d7-4123-b4e0-1218ecb90e3e",
+                            Name = "Reader",
+                            NormalizedName = "READER"
+                        },
+                        new
+                        {
+                            Id = "c309fa92-2123-47be-b397-a1c77adb502c",
+                            ConcurrencyStamp = "c309fa92-2123-47be-b397-a1c77adb502c",
+                            Name = "Writer",
+                            NormalizedName = "WRITER"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -218,8 +234,8 @@ namespace meetings_server.Migrations
 
             modelBuilder.Entity("meetings_server.Models.Domain.Attendee", b =>
                 {
-                    b.Property<int>("MeetingId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserId")
                         .HasColumnType("TEXT");
@@ -233,9 +249,10 @@ namespace meetings_server.Migrations
 
             modelBuilder.Entity("meetings_server.Models.Domain.Meeting", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("newsequentialid()");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("TEXT");
@@ -319,7 +336,7 @@ namespace meetings_server.Migrations
                         .IsRequired();
 
                     b.HasOne("meetings_server.Models.Domain.ApplicationUser", "User")
-                        .WithMany()
+                        .WithMany("Meetings")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -327,6 +344,11 @@ namespace meetings_server.Migrations
                     b.Navigation("Meeting");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("meetings_server.Models.Domain.ApplicationUser", b =>
+                {
+                    b.Navigation("Meetings");
                 });
 
             modelBuilder.Entity("meetings_server.Models.Domain.Meeting", b =>

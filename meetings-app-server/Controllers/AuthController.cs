@@ -22,8 +22,8 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
     {
-        var user = new ApplicationUser { UserName = request.Email, Email = request.Email, Name = request.Name };
-        var result = await _userManager.CreateAsync(user, request.Password);
+        var user = new ApplicationUser { UserName = request.email, Email = request.email, Name = request.name };
+        var result = await _userManager.CreateAsync(user, request.password);
 
         if (result.Succeeded)
             return Ok(new { Message = "User registered successfully" });
@@ -34,8 +34,8 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user != null && await _userManager.CheckPasswordAsync(user, request.Password))
+        var user = await _userManager.FindByEmailAsync(request.email);
+        if (user != null && await _userManager.CheckPasswordAsync(user, request.password))
         {
             var token = _tokenRepository.CreateJWTToken(user);
             return Ok(new { token, user.Email, user.Id });

@@ -231,8 +231,8 @@ namespace meetings_server.Migrations
 
             modelBuilder.Entity("meetings_server.Models.Domain.Attendee", b =>
                 {
-                    b.Property<int>("MeetingId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserId")
                         .HasColumnType("TEXT");
@@ -246,9 +246,10 @@ namespace meetings_server.Migrations
 
             modelBuilder.Entity("meetings_server.Models.Domain.Meeting", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("newsequentialid()");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("TEXT");

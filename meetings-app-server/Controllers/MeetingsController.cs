@@ -24,21 +24,28 @@ public class MeetingsController : ControllerBase
         _userManager = userManager;
     }
 
-
-    [HttpGet("{id}")]
+    [HttpGet]
     [Authorize]
-    public IActionResult GetMeeting(int id)
+    public IActionResult GetMeetingsForLoggedInUser()
     {
-        var meeting = _context.Meetings
+        // Get the currently logged-in user
+        var loggedInUser = _userManager.GetUserAsync(User).Result;
+        if (loggedInUser == null)
+            return Unauthorized("User not logged in");
+
+        // Get all meetings where the logged-in user is an attendee
+        var meetings = _context.Meetings
+            .Where(m => m.Attendees.Any(a => a.UserId == loggedInUser.Id))
             .Include(m => m.Attendees)
             .ThenInclude(a => a.User)
-            .FirstOrDefault(m => m.Id == id);
+            .ToList();
 
-        if (meeting == null)
-            return NotFound();
+        // If no meetings are found for the user
+        if (!meetings.Any())
+            return NotFound("No meetings found for the user.");
 
-        // Map Meeting entity to MeetingsResponseDto
-        var response = new MeetingsResponseDto
+        // Map Meeting entities to MeetingsResponseDto
+        var response = meetings.Select(meeting => new MeetingsResponseDto
         {
             _id = meeting.Id,
             name = meeting.Name,
@@ -59,10 +66,50 @@ public class MeetingsController : ControllerBase
                 userId = a.UserId,
                 email = a.User.Email
             }).ToList()
-        };
+        }).ToList();
 
         return Ok(response);
     }
+
+    //[HttpGet("{id}")]
+    //[Authorize]
+    //public IActionResult GetMeeting(Guid id)
+    //{
+    //    var meeting = _context.Meetings
+    //        .Include(m => m.Attendees)
+    //        .ThenInclude(a => a.User)
+    //        .FirstOrDefault(m => m.Id == id);
+
+    //    if (meeting == null)
+    //        return NotFound();
+
+    //    // Map Meeting entity to MeetingsResponseDto
+    //    var response = new MeetingsResponseDto
+    //    {
+    //        _id = meeting.Id,
+    //        name = meeting.Name,
+    //        description = meeting.Description,
+    //        date = meeting.Date.ToString("yyyy-MM-dd"), // Format date as string
+    //        startTime = new TimeDto
+    //        {
+    //            hours = meeting.StartTime.Hours,
+    //            minutes = meeting.StartTime.Minutes
+    //        },
+    //        endTime = new TimeDto
+    //        {
+    //            hours = meeting.EndTime.Hours,
+    //            minutes = meeting.EndTime.Minutes
+    //        },
+    //        attendees = meeting.Attendees.Select(a => new AttendeeResponseDto
+    //        {
+    //            userId = a.UserId,
+    //            email = a.User.Email
+    //        }).ToList()
+    //    };
+
+    //    return Ok(response);
+    //}
+
 
     [HttpPost("add")]
     [Authorize]
@@ -135,7 +182,7 @@ public class MeetingsController : ControllerBase
 
     [HttpPatch("{meetingId}")]
     [Authorize]
-    public async Task<IActionResult> ManageAttendees(int meetingId, [FromQuery] string action, [FromQuery] string? email = null)
+    public async Task<IActionResult> ManageAttendees(Guid meetingId, [FromQuery] string action, [FromQuery] string? email = null)
     {
         // Validate action parameter
         if (string.IsNullOrEmpty(action))
