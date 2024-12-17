@@ -34,29 +34,36 @@ public class MeetingsController : ControllerBase
             .ThenInclude(a => a.User)
             .FirstOrDefault(m => m.Id == id);
 
-        if (meeting == null) return NotFound();
+        if (meeting == null)
+            return NotFound();
 
-        // Manual formatting
-        var result = new
+        // Map Meeting entity to MeetingsResponseDto
+        var response = new MeetingsResponseDto
         {
-            id = meeting.Id,
+            _id = meeting.Id,
             name = meeting.Name,
             description = meeting.Description,
-            date = meeting.Date.ToString("yyyy-MM-dd"),
-            startTime = meeting.StartTime,
-            endTime = meeting.EndTime,
-            attendees = meeting.Attendees.Select(a => new
+            date = meeting.Date.ToString("yyyy-MM-dd"), // Format date as string
+            startTime = new TimeDto
+            {
+                hours = meeting.StartTime.Hours,
+                minutes = meeting.StartTime.Minutes
+            },
+            endTime = new TimeDto
+            {
+                hours = meeting.EndTime.Hours,
+                minutes = meeting.EndTime.Minutes
+            },
+            attendees = meeting.Attendees.Select(a => new AttendeeResponseDto
             {
                 userId = a.UserId,
                 email = a.User.Email
             }).ToList()
         };
 
-        return Ok(result);
+        return Ok(response);
     }
 
-
-    // POST: api/meetings
     [HttpPost("add")]
     [Authorize]
     public async Task<IActionResult> AddMeeting([FromBody] MeetingRequestDto request)
@@ -67,18 +74,28 @@ public class MeetingsController : ControllerBase
             return Unauthorized("User not logged in");
         }
 
+        // Validate time inputs
+        if (request.startTime == null || request.endTime == null)
+        {
+            return BadRequest("StartTime and EndTime are required.");
+        }
+
+        // Convert TimeDto to TimeSpan
+        var startTime = new TimeSpan(request.startTime.hours, request.startTime.minutes, 0);
+        var endTime = new TimeSpan(request.endTime.hours, request.endTime.minutes, 0);
+
         // Create the meeting object
         var meeting = new Meeting
         {
-            Name = request.Name,
-            Description = request.Description,
-            Date = request.Date,
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
+            Name = request.name,
+            Description = request.description,
+            Date = request.date,
+            StartTime = startTime,
+            EndTime = endTime,
             Attendees = new List<Attendee>() // Initialize Attendees as a new list
         };
 
-        //Add the logged -in user as an attendee
+        // Add the logged-in user as an attendee
         meeting.Attendees.Add(new Attendee
         {
             Meeting = meeting,
@@ -87,9 +104,9 @@ public class MeetingsController : ControllerBase
         });
 
         // Add attendees based on the emails provided in the request
-        if (request.Attendees != null && request.Attendees.Any())
+        if (request.attendees != null && request.attendees.Any())
         {
-            foreach (var email in request.Attendees)
+            foreach (var email in request.attendees)
             {
                 var attendee = await _userManager.FindByEmailAsync(email);
                 if (attendee != null)
@@ -103,17 +120,18 @@ public class MeetingsController : ControllerBase
                 }
                 else
                 {
-                     return BadRequest($"User with email {email} not found");
+                    return BadRequest($"User with email {email} not found");
                 }
             }
         }
 
-        // Add the meeting to the database
+        // Add meeting to database
         _context.Meetings.Add(meeting);
         await _context.SaveChangesAsync();
 
-        return Ok(new { Message = "Meeting created successfully", MeetingId = meeting.Id });
+        return Ok(new { message = "Meeting added successfully", meetingId = meeting.Id });
     }
+
 
     [HttpPatch("{meetingId}")]
     [Authorize]
