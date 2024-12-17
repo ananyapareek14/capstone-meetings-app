@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace meetings_server.Migrations
 {
     /// <inheritdoc />
-    public partial class AddGuidToMeetings : Migration
+    public partial class UptoMeetings : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

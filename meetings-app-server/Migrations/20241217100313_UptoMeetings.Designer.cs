@@ -11,8 +11,8 @@ using meetings_server.Data;
 namespace meetings_server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241217070706_AddGuidToMeetings")]
-    partial class AddGuidToMeetings
+    [Migration("20241217100313_UptoMeetings")]
+    partial class UptoMeetings
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
