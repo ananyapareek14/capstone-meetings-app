@@ -71,47 +71,100 @@ public class MeetingsController : ControllerBase
         return Ok(response);
     }
 
-    //[HttpGet("{id}")]
+
+    //[HttpPost("add")]
     //[Authorize]
-    //public IActionResult GetMeeting(Guid id)
+    //public async Task<IActionResult> AddMeeting([FromBody] MeetingRequestDto request)
     //{
-    //    var meeting = _context.Meetings
-    //        .Include(m => m.Attendees)
-    //        .ThenInclude(a => a.User)
-    //        .FirstOrDefault(m => m.Id == id);
+    //    var loggedInUser = await _userManager.GetUserAsync(User);
+    //    if (loggedInUser == null)
+    //    {
+    //        return Unauthorized("User not logged in");
+    //    }
 
-    //    if (meeting == null)
-    //        return NotFound();
+    //    // Validate time inputs
+    //    if (request.startTime == null || request.endTime == null)
+    //    {
+    //        return BadRequest("StartTime and EndTime are required.");
+    //    }
 
-    //    // Map Meeting entity to MeetingsResponseDto
-    //    var response = new MeetingsResponseDto
+    //    // Convert TimeDto to TimeSpan
+    //    var startTime = new TimeSpan(request.startTime.hours, request.startTime.minutes, 0);
+    //    var endTime = new TimeSpan(request.endTime.hours, request.endTime.minutes, 0);
+
+    //    // Create the meeting object
+    //    var meeting = new Meeting
+    //    {
+    //        Name = request.name,
+    //        Description = request.description,
+    //        Date = request.date,
+    //        StartTime = startTime,
+    //        EndTime = endTime,
+    //        Attendees = new List<Attendee>() // Initialize Attendees as a new list
+    //    };
+
+    //    // Add the logged-in user as an attendee
+    //    meeting.Attendees.Add(new Attendee
+    //    {
+    //        Meeting = meeting,
+    //        UserId = loggedInUser.Id,
+    //        User = loggedInUser
+    //    });
+
+    //    // Add attendees based on the emails provided in the request
+    //    if (request.attendees != null && request.attendees.Any())
+    //    {
+    //        foreach (var email in request.attendees)
+    //        {
+    //            var attendee = await _userManager.FindByEmailAsync(email);
+    //            if (attendee != null)
+    //            {
+    //                meeting.Attendees.Add(new Attendee
+    //                {
+    //                    Meeting = meeting,
+    //                    UserId = attendee.Id,
+    //                    User = attendee
+    //                });
+    //            }
+    //            else
+    //            {
+    //                return BadRequest($"User with email {email} not found");
+    //            }
+    //        }
+    //    }
+
+    //    // Add meeting to database
+    //    _context.Meetings.Add(meeting);
+    //    await _context.SaveChangesAsync();
+
+    //    // Return the full meeting details
+    //    var response = new
     //    {
     //        _id = meeting.Id,
     //        name = meeting.Name,
     //        description = meeting.Description,
-    //        date = meeting.Date.ToString("yyyy-MM-dd"), // Format date as string
-    //        startTime = new TimeDto
+    //        date = meeting.Date.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), // Format date as string (ISO 8601)
+    //        startTime = new
     //        {
     //            hours = meeting.StartTime.Hours,
     //            minutes = meeting.StartTime.Minutes
     //        },
-    //        endTime = new TimeDto
+    //        endTime = new
     //        {
     //            hours = meeting.EndTime.Hours,
     //            minutes = meeting.EndTime.Minutes
     //        },
-    //        attendees = meeting.Attendees.Select(a => new AttendeeResponseDto
+    //        attendees = meeting.Attendees.Select(a => new
     //        {
     //            userId = a.UserId,
     //            email = a.User.Email
-    //        }).ToList()
+    //        }).ToList(),
     //    };
 
     //    return Ok(response);
     //}
 
-
-    [HttpPost("add")]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> AddMeeting([FromBody] MeetingRequestDto request)
     {
@@ -142,7 +195,7 @@ public class MeetingsController : ControllerBase
             Attendees = new List<Attendee>() // Initialize Attendees as a new list
         };
 
-        // Add the logged-in user as an attendee
+        // Add the logged-in user as an attendee (this will always be added)
         meeting.Attendees.Add(new Attendee
         {
             Meeting = meeting,
@@ -150,7 +203,7 @@ public class MeetingsController : ControllerBase
             User = loggedInUser
         });
 
-        // Add attendees based on the emails provided in the request
+        // Add additional attendees based on the emails provided in the request
         if (request.attendees != null && request.attendees.Any())
         {
             foreach (var email in request.attendees)
@@ -176,8 +229,33 @@ public class MeetingsController : ControllerBase
         _context.Meetings.Add(meeting);
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Meeting added successfully", meetingId = meeting.Id });
+        // Return the full meeting details
+        var response = new
+        {
+            _id = meeting.Id,
+            name = meeting.Name,
+            description = meeting.Description,
+            date = meeting.Date.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), // Format date as string (ISO 8601)
+            startTime = new
+            {
+                hours = meeting.StartTime.Hours,
+                minutes = meeting.StartTime.Minutes
+            },
+            endTime = new
+            {
+                hours = meeting.EndTime.Hours,
+                minutes = meeting.EndTime.Minutes
+            },
+            attendees = meeting.Attendees.Select(a => new
+            {
+                userId = a.UserId,
+                email = a.User.Email
+            }).ToList(),
+        };
+
+        return Ok(response);
     }
+
 
 
     [HttpPatch("{meetingId}")]

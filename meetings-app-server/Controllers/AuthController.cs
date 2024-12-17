@@ -43,18 +43,4 @@ public class AuthController : ControllerBase
 
         return Unauthorized("Invalid credentials");
     }
-
-    [HttpGet("users")]
-    [Authorize]
-    public async Task<IActionResult> GetUsers()
-    {
-        var users = _userManager.Users.Select(user => new
-        {
-            user.Id,
-            user.Email,
-            user.UserName
-        }).ToList();
-
-        return Ok(users);
-    }
 }
