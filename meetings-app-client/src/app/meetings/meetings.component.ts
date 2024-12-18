@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AddmeetingsComponent } from '../addmeetings/addmeetings.component';
 import { ActivatedRoute, RouterLink, Router, RouterOutlet, NavigationEnd } from '@angular/router';
-import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-meetings',

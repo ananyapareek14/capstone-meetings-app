@@ -64,6 +64,36 @@ export class CalendarComponent implements OnInit {
     );
   }
 
+  getMeetingPosition(meeting: IMeeting): any {
+    const startHour = meeting.startTime.hours;
+    const endHour = meeting.endTime.hours;
+    const startMinutes = meeting.startTime.minutes || 0;
+    const endMinutes = meeting.endTime.minutes || 0;
+  
+    // Calculate top position (percentage relative to total calendar height)
+    const top = (startHour * 60 + startMinutes) / (24 * 60) * 100;
+  
+    // Calculate meeting duration in minutes
+    const durationMinutes =
+      (endHour - startHour) * 60 + (endMinutes - startMinutes);
+    const height = (durationMinutes / (24 * 60)) * 100; // Convert to percentage
+  
+    return {
+      position: 'absolute',
+      top: `${top}%`,
+      height: `${height}%`,
+      left: '5px',
+      right: '5px',
+      backgroundColor: '#f0f0f0',
+      border: '1px solid #a9a9a9',
+      padding: '4px',
+      fontSize: '12px',
+      overflow: 'hidden',
+      zIndex: 2,
+    };
+  }
+  
+
   hasMeetingAt(hour: number): boolean {
     return this.meetings.some(
       (meeting) =>
@@ -72,61 +102,30 @@ export class CalendarComponent implements OnInit {
     );
   }
 
+  // getMeetingsAt(hour: number): IMeeting[] {
+  //   return this.meetings.filter(
+  //     (meeting) =>
+  //       // The meeting starts within this hour
+  //       meeting.startTime.hours === hour ||
+  //       // Or the meeting spans into this hour but doesn't start or end elsewhere
+  //       (meeting.startTime.hours < hour && meeting.endTime.hours > hour) ||
+  //       // Or the meeting spans into this hour and ends in this hour
+  //       (meeting.startTime.hours < hour &&
+  //         meeting.endTime.hours === hour &&
+  //         meeting.endTime.minutes > 0)
+  //   );
+  // } 
+
   getMeetingsAt(hour: number): IMeeting[] {
-    return this.meetings.filter(
-      (meeting) =>
-        // The meeting starts within this hour
-        meeting.startTime.hours === hour ||
-        // Or the meeting spans into this hour but doesn't start or end elsewhere
-        (meeting.startTime.hours < hour && meeting.endTime.hours > hour) ||
-        // Or the meeting spans into this hour and ends in this hour
-        (meeting.startTime.hours < hour &&
-          meeting.endTime.hours === hour &&
-          meeting.endTime.minutes > 0)
-    );
+    return this.meetings.filter((meeting) => {
+      const meetingStart = meeting.startTime.hours + (meeting.startTime.minutes || 0) / 60;
+      const meetingEnd = meeting.endTime.hours + (meeting.endTime.minutes || 0) / 60;
+  
+      // Check if the meeting STARTS or SPANS into this hour
+      return meetingStart < hour + 1 && meetingEnd > hour;
+    });
   }
-
-  // getMeetingsAt(hour: number): IMeeting[] {
-  //   return this.meetings.filter(
-  //     (meeting) =>
-  //       // The meeting starts within this hour
-  //       (meeting.startTime.hours === hour && meeting.startTime.minutes > 0) ||
-  //       // The meeting spans into this hour (start before this hour and ends after this hour)
-  //       (meeting.startTime.hours < hour && meeting.endTime.hours > hour) ||
-  //       // The meeting ends within this hour (it starts before the hour and ends at the hour or before)
-  //       (meeting.startTime.hours < hour &&
-  //         meeting.endTime.hours === hour &&
-  //         meeting.endTime.minutes > 0) ||
-  //       // The meeting ends exactly at the hour boundary (e.g., 8:30 to 9:30)
-  //       (meeting.startTime.hours === hour &&
-  //         meeting.endTime.hours === hour &&
-  //         meeting.startTime.minutes < meeting.endTime.minutes)
-  //   );
-  // }
-
-  // getMeetingsAt(hour: number): IMeeting[] {
-  //   return this.meetings.filter(
-  //     (meeting) =>
-  //       // The meeting starts within this hour
-  //       (meeting.startTime.hours === hour && meeting.startTime.minutes > 0) ||
-  //       // The meeting spans into this hour (starts before and ends after this hour)
-  //       (meeting.startTime.hours < hour && meeting.endTime.hours > hour) ||
-  //       // The meeting ends within this hour (it starts before this hour and ends at or before this hour)
-  //       (meeting.startTime.hours < hour &&
-  //         meeting.endTime.hours === hour &&
-  //         meeting.endTime.minutes > 0) ||
-  //       // The meeting is exactly one hour long (e.g., 11:00 to 12:00)
-  //       (meeting.startTime.hours === hour &&
-  //         meeting.endTime.hours === hour &&
-  //         meeting.startTime.minutes === 0 &&
-  //         meeting.endTime.minutes === 0) ||
-  //       // The meeting is a full-hour meeting, like 11:00–12:00
-  //       (meeting.startTime.hours === hour &&
-  //         meeting.endTime.hours === hour &&
-  //         meeting.startTime.minutes === 0 &&
-  //         meeting.endTime.minutes === 0)
-  //   );
-  // }
+  
 
   getMeetingStyles(meeting: IMeeting): any {
     const startHour = meeting.startTime.hours;
