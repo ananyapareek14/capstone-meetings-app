@@ -1,96 +1,137 @@
-  <!-- <form (ngSubmit)="addMeeting()">
-    <div class="mb-3">
-      <label for="date" class="form-label">Date:</label>
-      <input type="date" id="date" class="form-control" [(ngModel)]="meeting.date" name="date" required />
-    </div>
-  
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <label for="startTime" class="form-label">Start Time:</label>
-        <input type="time" id="startTime" class="form-control" [(ngModel)]="meeting.startTime" name="startTime" required />
-      </div>
-      <div class="col-md-6 mb-3">
-        <label for="endTime" class="form-label">End Time:</label>
-        <input type="time" id="endTime" class="form-control" [(ngModel)]="meeting.endTime" name="endTime" required />
-      </div>
-    </div>
-  
-    <div class="mb-3">
-      <label for="description" class="form-label">Description:</label>
-      <textarea
-        id="description"
-        class="form-control"
-        rows="2"
-        [(ngModel)]="meeting.description"
-        name="description"
-        required
-      ></textarea>
-    </div>
-  
-    <div class="mb-3">
-      <label for="attendees" class="form-label">Email IDs or Team Short Names:</label>
+ <!-- <form class="container p-3 mt-0" (ngSubmit)="addMeeting()">
+  <div class="mb-3">
+    <h3 class="text-primary">Add a New Meeting</h3>
+    <hr />
+    <label for="name" class="form-label">Meeting Name:</label>
+    <input
+      type="text"
+      id="name"
+      class="form-control"
+      [(ngModel)]="meeting.name"
+      name="name"
+      required
+    />
+  </div>
+
+  <div class="mb-3">
+    <label for="date" class="form-label">Date:</label>
+    <input
+      type="date"
+      id="date"
+      class="form-control"
+      [(ngModel)]="meeting.date"
+      name="date"
+      required
+    />
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="startTime" class="form-label">Start Time:</label>
       <input
-        type="text"
-        id="attendees"
+        type="time"
+        id="startTime"
         class="form-control"
-        [(ngModel)]="meeting.attendees"
-        name="attendees"
-        placeholder="e.g., john@example.com, @team-short-name"
+        [(ngModel)]="meeting.startTime"
+        name="startTime"
         required
       />
     </div>
-  
-    <button type="submit" class="btn btn-success">Add Meeting</button>
-  </form>
+    <div class="col-md-6 mb-3">
+      <label for="endTime" class="form-label">End Time:</label>
+      <input
+        type="time"
+        id="endTime"
+        class="form-control"
+        [(ngModel)]="meeting.endTime"
+        name="endTime"
+        required
+      />
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label for="description" class="form-label">Description:</label>
+    <textarea
+      id="description"
+      class="form-control"
+      rows="2"
+      [(ngModel)]="meeting.description"
+      name="description"
+      placeholder="What is the agenda of the meeting?"
+      required
+    ></textarea>
+  </div>
+
+  <div class="mb-4">
+    <label for="attendees" class="form-label">Email IDs or Team Short Names:</label>
+    <input
+      type="text"
+      id="attendees"
+      class="form-control"
+      [(ngModel)]="meeting.attendees"
+      name="attendees"
+      placeholder="e.g., john@example.com, @team-short-name"
+    />
+    <p class="text-secondary fw-bold">
+      Separate EmailIds / team short names by commas - team short names always begin with &#64;
+    </p>
+  </div>
+
+  <button type="submit" class="btn btn-success d-flex justify-content-center">
+    Add Meeting
+  </button>
+</form>
    -->
 
-
-   <form (ngSubmit)="addMeeting()">
+   <form class="container p-3 mt-0" (ngSubmit)="addMeeting()">
     <div class="mb-3">
+      <h3 class="text-primary">Add a New Meeting</h3>
+      <hr />
       <label for="name" class="form-label">Meeting Name:</label>
-      <input 
-        type="text" 
-        id="name" 
-        class="form-control" 
-        [(ngModel)]="meeting.name" 
-        name="name" 
-        required 
+      <input
+        type="text"
+        id="name"
+        class="form-control"
+        [(ngModel)]="meeting.name"
+        name="name"
+        required
       />
     </div>
   
     <div class="mb-3">
       <label for="date" class="form-label">Date:</label>
-      <input 
-        type="date" 
-        id="date" 
-        class="form-control" 
-        [(ngModel)]="meeting.date" 
-        name="date" 
-        required 
+      <input
+        type="date"
+        id="date"
+        class="form-control"
+        [(ngModel)]="meeting.date"
+        name="date"
+        required
       />
     </div>
   
     <div class="row">
       <div class="col-md-6 mb-3">
         <label for="startTime" class="form-label">Start Time:</label>
-        <input 
-          type="time" 
-          id="startTime" 
-          class="form-control" 
-          [(ngModel)]="meeting.startTime" 
-          name="startTime" 
-          required 
+        <input
+          type="time"
+          id="startTime"
+          class="form-control"
+          [(ngModel)]="meeting.startTime"
+          name="startTime"
+          required
         />
       </div>
       <div class="col-md-6 mb-3">
         <label for="endTime" class="form-label">End Time:</label>
-        <input 
-          type="time" 
-          id="endTime" 
-          class="form-control" 
-          [(ngModel)]="meeting.endTime" 
-          name="endTime" 
-          required 
+        <input
+          type="time"
+          id="endTime"
+          class="form-control"
+          [(ngModel)]="meeting.endTime"
+          name="endTime"
+          required
         />
       </div>
     </div>
@@ -103,11 +144,12 @@
         rows="2"
         [(ngModel)]="meeting.description"
         name="description"
+        placeholder="What is the agenda of the meeting?"
         required
       ></textarea>
     </div>
   
-    <div class="mb-3">
+    <div class="mb-4">
       <label for="attendees" class="form-label">Email IDs or Team Short Names:</label>
       <input
         type="text"
@@ -116,10 +158,14 @@
         [(ngModel)]="meeting.attendees"
         name="attendees"
         placeholder="e.g., john@example.com, @team-short-name"
-        required
       />
+      <p class="text-secondary fw-bold">
+        Separate EmailIds / team short names by commas - team short names always begin with &#64;
+      </p>
     </div>
   
-    <button type="submit" class="btn btn-success">Add Meeting</button>
+    <button type="submit" class="btn btn-success d-flex justify-content-center">
+      Add Meeting
+    </button>
   </form>
   

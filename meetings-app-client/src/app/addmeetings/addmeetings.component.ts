@@ -41,8 +41,7 @@ export class AddmeetingsComponent {
       !!this.meeting.date && // Ensure the date is non-empty
       !!this.meeting.startTime && // Ensure the start time is non-empty
       !!this.meeting.endTime && // Ensure the end time is non-empty
-      !!this.meeting.description && // Ensure the description is non-empty
-      !!this.meeting.attendees // Ensure attendees field is non-empty
+      !!this.meeting.description // Ensure the description is non-empty
     );
   }
 
@@ -53,8 +52,12 @@ export class AddmeetingsComponent {
     }
   
     console.log('Meeting to be added:', this.meeting);
-    
-    const attendeesList = this.meeting.attendees.split(',').map((a) => a.trim());
+
+    let attendeesList: string[] = [];
+
+    if(this.meeting.attendees.length > 0) {
+      const attendeesList = this.meeting.attendees.split(',').map((a) => a.trim());
+    }
     
     const [startHours, startMinutes] = this.meeting.startTime.split(':').map(Number);
     

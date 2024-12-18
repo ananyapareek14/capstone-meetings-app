@@ -150,7 +150,7 @@ export class CalendarComponent implements OnInit {
         : {};
 
     return {
-      // position: 'absolute',
+      position: 'absolute',
       top: `${topOffset}%`,
       height: `${height}px`,
       ...inlineStyle,
