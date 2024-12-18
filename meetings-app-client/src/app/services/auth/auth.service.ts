@@ -4,14 +4,19 @@ import { environment } from '../../environment/environment';
 import ILogin, { ILoginCredentials } from '../../models/IAuth';
 import { IRegister } from '../../models/IRegister';
 import { tap } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  private userEmailSubject = new BehaviorSubject<string>(''); // Initial email is empty
+  userEmail$ = this.userEmailSubject.asObservable();
   private readonly AUTH_KEY = 'auth'
   private apiUrl = environment.apiUrl;
   constructor(private http: HttpClient) {}
+
+
 
   login(credentials: ILoginCredentials) {
     return this.http.post<ILogin>(`${this.apiUrl}/auth/login`, credentials, {
@@ -20,6 +25,10 @@ export class AuthService {
       },
     }).pipe(
       tap((loginResponse) => {
+        const email = loginResponse.email; // Ensure your response has an `email` field
+        if (email) {
+          this.setUserEmail(email); // Update the observable
+        }
           localStorage.setItem(
             this.AUTH_KEY,
             JSON.stringify(loginResponse)
@@ -50,17 +59,33 @@ export class AuthService {
     return null;
   }
 
+  setUserEmail(email: string): void {
+    this.userEmailSubject.next(email);
+    localStorage.setItem(this.AUTH_KEY, JSON.stringify({ email }));
+  }
+
   // getUserEmail(): string {
-  //   return localStorage.getItem('email') || '';
+  //   const auth = localStorage.getItem(this.AUTH_KEY);
+  //   if (auth) {
+  //     const parsedAuth = JSON.parse(auth);
+  //     return parsedAuth.email || '';  
+  //   }
+  //   return '';
   // }
 
   getUserEmail(): string {
     const auth = localStorage.getItem(this.AUTH_KEY);
     if (auth) {
       const parsedAuth = JSON.parse(auth);
-      return parsedAuth.email || '';  
+      const email = parsedAuth.email || '';
+      this.userEmailSubject.next(email); // Update the observable with the current email
+      return email;
     }
     return '';
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.getAuthToken(); // Returns true if a token exists, false otherwise
   }
 
   logout() {

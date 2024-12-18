@@ -38,33 +38,26 @@ export class MeetingsComponent implements OnInit {
 
   ngOnInit() {
 
-    // this.route.url.subscribe((url) => {
-    //   // Check the current route segment to switch tabs
-    //   if (url[1]?.path === 'add') {
-    //     this.activeTab = 'add';
-    //   } else {
-    //     this.activeTab = 'search';
-    //   }
-    // });
-
     this.router.events.subscribe((event) => {
-          if (event instanceof NavigationEnd) {
-            this.loadMeetings();
-            this.filterMeetings();
-          }
-        });
-
-    this.route.firstChild?.url.subscribe((urlSegments) => {
-      if (urlSegments.length > 0) {
-        const tab = urlSegments[0].path; // Check if it's 'add' or 'search'
-        this.activeTab = tab === 'add' ? 'add' : 'search'; // Set active tab
+      if (event instanceof NavigationEnd) {
+        if (event.url === '/meetings') {
+          this.activeTab = 'search'; // Reset the active tab
+          this.loadMeetings(); // Reload meetings data
+          this.filterMeetings(); // Refresh the filtered list
+        }
       }
     });
-
+  
+    this.route.firstChild?.url.subscribe((urlSegments) => {
+      if (urlSegments.length > 0) {
+        const tab = urlSegments[0].path;
+        this.activeTab = tab === 'add' ? 'add' : 'search';
+      }
+    });
+  
     this.fetchAvailableEmails();
     this.loadMeetings();
     this.filterMeetings();
-
   }
 
 
@@ -86,26 +79,7 @@ export class MeetingsComponent implements OnInit {
       }
     );
   }
-
-  // loadMeetings() {
-  //   this.meetingsService.getMeetings().subscribe(
-  //     (data) => {
-  //       this.meetings = data;
   
-  //       this.meetings.forEach(meeting => {
-  //         meeting.newAttendee = ''; 
-  //       });
-  
-  //       console.log(this.meetings);
-  //       this.filterMeetings(); 
-  //     },
-  //     (error) => {
-  //       console.error('Error fetching meetings:', error);
-  //     }
-  //   );
-  // }
-  
-
   filterMeetings() {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Remove time portion for accurate date-only comparison
@@ -154,10 +128,6 @@ export class MeetingsComponent implements OnInit {
     );
   }
 
-  // get attendeeEmails(): string {
-  //   return this.meeting.attendees.map((a: any) => a.email).join(', ');
-  // }
-
   addAttendee(meetingId: string, attendeeEmail: string) {
     if (!attendeeEmail) return;
 
@@ -191,10 +161,4 @@ export class MeetingsComponent implements OnInit {
     this.filterMeetings(); // Call the existing filter logic
     console.log('Search executed with terms:', this.searchTerm);
   }
-
-  // Validate meeting form inputs
-  
-
-  // Reset meeting form after submission
-  
 }
