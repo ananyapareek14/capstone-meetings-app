@@ -1,4 +1,4 @@
- <div class="container mt-4">
+<div class="container mt-4">
   <h2 class="underline mb-0">Meetings</h2>
   <hr class="mb-3 mt-1" />
 
@@ -58,6 +58,7 @@
             class="form-control"
             rows="1"
             [(ngModel)]="searchTerm"
+            (input)="searchMeetings()"
             placeholder="Enter search terms"
           ></textarea>
         </div>
@@ -132,7 +133,7 @@
 
     <!-- Add Meeting Tab -->
     <div
-      class="tab-pane fade show active"
+      class="tab-pane fade show"
       id="add-tab"
       *ngIf="activeTab === 'add'"
     >
@@ -140,4 +141,4 @@
     </div>
   </div>
 </div>
-  
+

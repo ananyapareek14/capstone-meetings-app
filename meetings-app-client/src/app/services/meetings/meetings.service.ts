@@ -10,8 +10,20 @@ export class MeetingsService {
   private baseUrl = environment.apiUrl;
   constructor(private http: HttpClient) {}
 
-  getMeetings(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/meetings`);
+  // getMeetings(): Observable<any[]> {
+  //   return this.http.get<any[]>(`${this.baseUrl}/meetings`);
+  // }
+
+  getMeetings(search?: string, period?: 'all' | 'past' | 'present' | 'future'): Observable<any[]> {
+    let params = new HttpParams();
+    if (search) {
+      params = params.set('search', search);
+    }
+    if (period) {
+      params = params.set('period', period);
+    }
+
+    return this.http.get<any[]>(`${this.baseUrl}/meetings`, { params });
   }
 
   addMeeting(meeting: any): Observable<any> {
