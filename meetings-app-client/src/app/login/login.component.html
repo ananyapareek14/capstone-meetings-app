@@ -1,19 +1,20 @@
-<div id="login" class="container mt-5">
-  <div class="row justify-content-center">
+ <div id="login" class="wrapper">
+  <div class="container row justify-content-center">
     <div class="col-md-6">
-      <h1 class="text-center">Login</h1>
+      <h1 class="text-center mb-4">Login</h1>
       <form
           name="form"
           (ngSubmit)="login()"
           #f="ngForm"
           novalidate
+          class="login-form"
       >
         <div class="mb-3">
           <label for="email" class="form-label">Email</label>
           <input 
               type="text" 
               placeholder="Enter your email"
-              class="form-control"
+              class="form-control w-100"
               [(ngModel)]="credentials.email"
               name="email"
               #email="ngModel"
@@ -30,14 +31,11 @@
               #password="ngModel"
           >
         </div>
-        <button type="submit" class="btn btn-primary w-100">Login</button>
+        <button type="submit" class="btn w-100">Login</button>
         <div class="text-center mt-3">
-          <a href="#" class="d-block">Forgot Password?</a>
-          <a routerLink="/register" class="d-block">Don't have an account? Sign up</a>
+          <a routerLink="/register" class="d-block" style="color: #73c7d5;">Don't have an account? Sign up</a>
         </div>
       </form>
     </div>
   </div>
 </div>
-
-

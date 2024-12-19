@@ -35,7 +35,7 @@
       *ngIf="activeTab === 'search'"
     >
       <div class="filter-box row mb-4">
-        <h4 style="color:white">Search for meetings</h4>
+        <h4 style="color: white">Search for meetings</h4>
         <hr />
         <div class="col-md-4">
           <label for="filter" class="form-label">Date:</label>
@@ -66,79 +66,80 @@
 
       <h4>Meetings matching search criteria</h4>
       <hr />
-      <div class="list-group container mb-3">
-        <div
-          *ngFor="let meeting of filteredMeetings"
-          class="list-group-item py-3"
-        >
-          <p class="mb-1">
-            <strong class="fs-5">
-              {{ meeting.date | date: 'dd MMMM yyyy' }}
-            </strong>
-            <small>
-              {{ meeting.startTime.hours }}:{{ meeting.startTime.minutes | number: '2.0' }}
-              -
-              {{ meeting.endTime.hours }}:{{ meeting.endTime.minutes | number: '2.0' }}
-            </small>
-          </p>
-
-          <p class="mb-3">{{ meeting.name }}</p>
-
-          <button
-            class="btn btn-danger btn-sm mb-2"
-            (click)="leaveMeeting(meeting._id)"
+      
+      <div *ngIf="filteredMeetings.length > 0; else noMeetings">
+        <div class="list-group container mb-3">
+          <div
+            *ngFor="let meeting of filteredMeetings"
+            class="list-group-item py-3"
           >
-            Excuse Yourself
-          </button>
+            <p class="mb-1">
+              <strong class="fs-5">
+                {{ meeting.date | date : "dd MMMM yyyy" }}
+              </strong>
+              <small>
+                {{ meeting.startTime.hours }}:{{
+                  meeting.startTime.minutes | number : "2.0"
+                }}
+                - {{ meeting.endTime.hours }}:{{
+                  meeting.endTime.minutes | number : "2.0"
+                }}
+              </small>
+            </p>
 
-          <hr />
+            <p class="mb-3">{{ meeting.name }}</p>
 
-          <p class="mb-2">
-            <strong>Attendees:</strong>
-            <span
-              *ngIf="meeting.attendees && meeting.attendees.length > 0; else noAttendees"
-            >
-              <span
-                *ngFor="let attendee of meeting.attendees; let i = index"
-              >
-                {{ attendee.name || attendee.email }}<span
-                  *ngIf="i < meeting.attendees.length - 1"
-                  >, </span
-                >
-              </span>
-            </span>
-            <ng-template #noAttendees>No attendees yet.</ng-template>
-          </p>
-
-          <div>
-            <select
-              class="form-select form-select-sm d-inline w-auto"
-              [(ngModel)]="meeting.newAttendee"
-            >
-              <option [value]="" disabled selected>Select member</option>
-              <option *ngFor="let email of availableEmails" [value]="email">
-                {{ email }}
-              </option>
-            </select>
             <button
-              class="btn btn-primary btn-sm ms-2"
-              (click)="addAttendee(meeting._id, meeting.newAttendee)"
+              class="btn btn-danger btn-sm mb-2"
+              (click)="leaveMeeting(meeting._id)"
             >
-              Add
+              Excuse Yourself
             </button>
+
+            <hr />
+
+            <p class="mb-2">
+              <strong>Attendees:</strong>
+              <span
+                *ngIf="meeting.attendees && meeting.attendees.length > 0; else noAttendees"
+              >
+                <span *ngFor="let attendee of meeting.attendees; let i = index">
+                  {{ attendee.name || attendee.email }}
+                  <span *ngIf="i < meeting.attendees.length - 1">, </span>
+                </span>
+              </span>
+              <ng-template #noAttendees>No attendees yet.</ng-template>
+            </p>
+
+            <div>
+              <select class="form-select form-select-sm d-inline w-auto" [(ngModel)]="meeting.newAttendee">
+                <option [value]="" disabled selected>Select member</option>
+                <option *ngFor="let email of availableEmails" [value]="email">
+                  {{ email }}
+                </option>
+              </select>
+              <button class="btn btn-primary btn-sm ms-2" (click)="addAttendee(meeting._id, meeting.newAttendee)">
+                Add
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      <ng-template #noMeetings>
+        <div>
+          <p>No Meetings found!</p>
+        </div>
+      </ng-template>
     </div>
 
-    <!-- Add Meeting Tab -->
     <div
-      class="tab-pane fade show"
+      class="tab-pane fade"
+      [class.show]="activeTab === 'add'"
+      [class.active]="activeTab === 'add'"
       id="add-tab"
-      *ngIf="activeTab === 'add'"
     >
       <router-outlet></router-outlet>
     </div>
   </div>
 </div>
-

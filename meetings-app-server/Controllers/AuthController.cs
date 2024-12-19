@@ -31,6 +31,19 @@ public class AuthController : ControllerBase
         return BadRequest(result.Errors);
     }
 
+    //[HttpPost("login")]
+    //public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
+    //{
+    //    var user = await _userManager.FindByEmailAsync(request.email);
+    //    if (user != null && await _userManager.CheckPasswordAsync(user, request.password))
+    //    {
+    //        var token = _tokenRepository.CreateJWTToken(user);
+    //        return Ok(new { token, user.Email, user.Name });
+    //    }
+
+    //    return Unauthorized("Invalid credentials");
+    //}
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
@@ -38,9 +51,16 @@ public class AuthController : ControllerBase
         if (user != null && await _userManager.CheckPasswordAsync(user, request.password))
         {
             var token = _tokenRepository.CreateJWTToken(user);
-            return Ok(new { token, user.Email, user.Id });
+            return Ok(new
+            {
+                message = "Signed in successfully",
+                token = token,
+                email = user.Email,
+                name = user.Name
+            });
         }
 
-        return Unauthorized("Invalid credentials");
+        return Unauthorized(new { message = "Invalid credentials" });
     }
+
 }

@@ -1,50 +1,14 @@
-// import { Component } from '@angular/core';
-// import { Router,RouterLink } from '@angular/router';
-// import { AuthService } from '../services/auth/auth.service';
-// import { IRegister } from '../models/iregister';
-
-// @Component({
-//   selector: 'app-register',
-//   standalone: true,
-//   imports: [RouterLink],
-//   templateUrl: './register.component.html',
-//   styleUrl: './register.component.scss'
-// })
-// export class RegisterComponent {
-//   registrationData: IRegister = {
-//     name: '',
-//     email: '',
-//     password: ''
-//   };
-
-//   constructor(private authService: AuthService, private router: Router) {}
-
-//   register() {
-//     this.authService.register(this.registrationData).subscribe({
-//       next: () => {
-//         alert('Registration successful! Redirecting to login page.');
-//         this.router.navigateByUrl('/login');
-//       },
-//       error: (err) => {
-//         console.error('Registration failed:', err);
-//         alert('Registration failed. Please try again.');
-//       }
-//     });
-//   }
-// }
-
-
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })

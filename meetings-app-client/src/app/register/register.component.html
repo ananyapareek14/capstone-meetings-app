@@ -1,7 +1,7 @@
-<div id="registration" class="container mt-5">
-  <div class="row justify-content-center">
+<div id="registration" class="wrapper">
+  <div class="container row justify-content-center">
     <div class="col-md-6">
-      <h2 class="text-center">Register</h2>
+      <h2 class="text-center pb-3">Register</h2>
       <form [formGroup]="registerForm" (ngSubmit)="register()">
         <div class="mb-3">
           <label for="name" class="form-label">Full Name</label>
@@ -57,7 +57,7 @@
         </div>
         <button class="btn btn-success w-100" type="submit" [disabled]="registerForm.invalid">Register</button>
         <div class="text-center mt-3">
-          <a routerLink="/login" class="d-block">Already have an account? Login</a>
+          <a routerLink="/login" class="d-block" style="cursor: pointer; color: #73c7d5;">Already have an account? Login</a>
         </div>
       </form>
     </div>
