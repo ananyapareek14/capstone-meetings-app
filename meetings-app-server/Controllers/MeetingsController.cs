@@ -21,33 +21,100 @@ public class MeetingsController : ControllerBase
         _userManager = userManager;
     }
 
+    //[HttpGet]
+    //[Authorize]
+    //public IActionResult GetMeetingsForLoggedInUser()
+    //{
+    //    // Get the currently logged-in user
+    //    var loggedInUser = _userManager.GetUserAsync(User).Result;
+    //    if (loggedInUser == null)
+    //        return Unauthorized("User not logged in");
+
+    //    // Get all meetings where the logged-in user is an attendee
+    //    var meetings = _context.Meetings
+    //        .Where(m => m.Attendees.Any(a => a.UserId == loggedInUser.Id))
+    //        .Include(m => m.Attendees)
+    //        .ThenInclude(a => a.User)
+    //        .ToList();
+
+    //    // If no meetings are found for the user
+    //    if (!meetings.Any())
+    //        return NotFound("No meetings found for the user.");
+
+    //    // Map Meeting entities to MeetingsResponseDto
+    //    var response = meetings.Select(meeting => new MeetingsResponseDto
+    //    {
+    //        _id = meeting.Id,
+    //        name = meeting.Name,
+    //        description = meeting.Description,
+    //        date = meeting.Date.ToString("yyyy-MM-dd"), // Format date as string
+    //        startTime = new TimeDto
+    //        {
+    //            hours = meeting.StartTime.Hours,
+    //            minutes = meeting.StartTime.Minutes
+    //        },
+    //        endTime = new TimeDto
+    //        {
+    //            hours = meeting.EndTime.Hours,
+    //            minutes = meeting.EndTime.Minutes
+    //        },
+    //        attendees = meeting.Attendees.Select(a => new AttendeeResponseDto
+    //        {
+    //            userId = a.UserId,
+    //            email = a.User.Email
+    //        }).ToList()
+    //    }).ToList();
+
+    //    return Ok(response);
+    //}
+
     [HttpGet]
     [Authorize]
-    public IActionResult GetMeetingsForLoggedInUser()
+    public async Task<IActionResult> SearchMeetings([FromQuery] string? search = null, [FromQuery] string? period = "all")
     {
-        // Get the currently logged-in user
-        var loggedInUser = _userManager.GetUserAsync(User).Result;
+        var loggedInUser = await _userManager.GetUserAsync(User);
         if (loggedInUser == null)
+        {
             return Unauthorized("User not logged in");
+        }
 
-        // Get all meetings where the logged-in user is an attendee
-        var meetings = _context.Meetings
-            .Where(m => m.Attendees.Any(a => a.UserId == loggedInUser.Id))
+        var validPeriods = new[] { "all", "past", "present", "future" };
+        if (!validPeriods.Contains(period))
+        {
+            return BadRequest($"Invalid period. Valid values are: {string.Join(", ", validPeriods)}");
+        }
+
+        var currentDate = DateTime.UtcNow;
+
+        var query = _context.Meetings
+            .Where(m => m.Attendees.Any(a => a.UserId == loggedInUser.Id));
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            // Convert both sides to lowercase for case-insensitive search
+            var searchLower = search.ToLower();
+            query = query.Where(m => m.Description.ToLower().Contains(searchLower));
+        }
+
+        query = period switch
+        {
+            "past" => query.Where(m => m.Date < currentDate.Date),
+            "present" => query.Where(m => m.Date == currentDate.Date),
+            "future" => query.Where(m => m.Date > currentDate.Date),
+            _ => query
+        };
+
+        var meetings = await query
             .Include(m => m.Attendees)
             .ThenInclude(a => a.User)
-            .ToList();
+            .ToListAsync();
 
-        // If no meetings are found for the user
-        if (!meetings.Any())
-            return NotFound("No meetings found for the user.");
-
-        // Map Meeting entities to MeetingsResponseDto
         var response = meetings.Select(meeting => new MeetingsResponseDto
         {
             _id = meeting.Id,
             name = meeting.Name,
             description = meeting.Description,
-            date = meeting.Date.ToString("yyyy-MM-dd"), // Format date as string
+            date = meeting.Date.ToString("yyyy-MM-dd"),
             startTime = new TimeDto
             {
                 hours = meeting.StartTime.Hours,
